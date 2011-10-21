@@ -48,7 +48,9 @@ You'll want to replace the right-hand side of planets with your solar system.
 >
 > main :: IO()
 > main = 
->   do animateB "Solar system" (orbit sun mercury 2.0 2.0 0.2)
+>   do animateB "Solar system" sun 
+
+(orbit sun mercury 2.0 2.0 0.2)
        
 It may be useful for you to use your applicative functor for Behaviors.  Feel
 free to copy it in here and use it:
@@ -68,29 +70,22 @@ Next, use the provided function translateB to write a function
 >       -> Float            -- the y-radius of the orbit
 >       -> Behavior Picture
 >
-> overB = lift2 Over
+> overB freq p1 p2 = Beh (\t ->
+>                          if cos(t*freq) < 0
+>                              then at (lift2 Over p1 p2) t
+>                              else at (lift2 Over p1 p2) t
+>                   )
 > cosB = lift1 cos
 
 >--- orbit p1 p2 freq xrad yrad = lift2 Over p1 p2
 >---   where p3 = translateB ( lift0(xrad*cos((fromIntegral(time))*freq)), lift0(yrad*sin((fromIntegral(time))*freq))) p2
 
-> orbit p1 p2 freq xrad yrad = overB p3 p4
+> orbit p1 p2 freq xrad yrad = overB freq p1 p2
 >      where translated_p = (translateB (floatx, floaty) p2)
 >            floatx :: Behavior Float
 >            floatx = Beh (\t -> xrad*cos (t*freq))
 >            floaty :: Behavior Float
 >            floaty = Beh (\t -> yrad*sin (t*freq))
->            dummy :: Behavior Float
->            dummy = Beh (\t -> (freq * t))
->            asdf = cosB <*> dummy
->            p3 = 
->             if (cosB <*> dummy) > 0
->               then p1
->               else translated_p
->            p4 = p1
->            -- if cos(freq* x) > 0
->             --  then translated_p
->             --  else p1
 >
 > at :: Behavior a -> Time -> a
 > at (Beh f) t = f t
