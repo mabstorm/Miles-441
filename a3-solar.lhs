@@ -77,6 +77,10 @@ Next, use the provided function translateB to write a function
 >                   )
 > cosB = lift1 cos
 
+
+> sizechangingplanet = reg (lift0 Yellow) (shape (circ size1))
+> size1 = Beh (\t -> sin(t))
+
 >--- orbit p1 p2 freq xrad yrad = lift2 Over p1 p2
 >---   where p3 = translateB ( lift0(xrad*cos((fromIntegral(time))*freq)), lift0(yrad*sin((fromIntegral(time))*freq))) p2
 
