@@ -182,21 +182,21 @@ prove the first absorption law.
 Prove:  for all x, y:  meet x (join x y) == x
 
 case y <: x
-  1.) join x y = x                    (by def of join on case y <: x)
-  2.) meet x (join x y) = meet x x    (by 1)
-  3.) meet x x = x                    (by idempotence I)
+  1.) join x y          = x           (by def of join on case y <: x)
+  2.) meet x (join x y) = meet x x    (by 1 substituted into "meet x (join x y))
+  3.) meet x x          = x           (by idempotence I)
 case done
 
 case x <: y
-  1.) join x y = y                    (by def of join on case x <: y)
-  2.) meet x (join x y) = meet x y    (by 1)
-  3.) meet x y = x                    (by def of meet on case x <: y)
+  1.) join x y          = y           (by def of join on case x <: y)
+  2.) meet x (join x y) = meet x y    (by 1 substituted into "meet x (join x y))
+  3.) meet x y          = x           (by def of meet on case x <: y)
 case done
 
 case x = y
-  1.) join x x = x                    (by idempotence II and case x = y)
-  2.) meet x (join x x) = meet x x    (by 1)
-  3.) meet x x = x                    (by idempotence I)
+  1.) join x x          = x           (by idempotence II and case x = y)
+  2.) meet x (join x x) = meet x x    (by 1 substituted into "meet x (join x y)")
+  3.) meet x x          = x           (by idempotence I)
 case done
 
 
@@ -217,7 +217,7 @@ in a way such that the types line up.
 >   fmap f (Beh fn_returnsa) = Beh (\t -> f (fn_returnsa t))
 > instance Applicative Behavior where
 >   pure f = Beh (\t -> f)
->   (Beh f) <*> (Beh x) = Beh (\t -> f 0.5 (x t))
+>   (Beh f) <*> (Beh x) = Beh (\t -> (f t) (x t))
 >
 
 > -- determines a behavior's value at a time; useful for testing
@@ -269,13 +269,23 @@ http://haskell.org/ghc/docs/6.12.1/html/libraries/base/Control-Applicative.html
 you may find some useful functions such as <$> <$ <**> liftA liftA2 liftA3.
 (You'll probably only use one of them below, but more may be useful later.)
 
+--pure show <*> time makes time a String, applies toUpperCase to "the current time is:" string, concats two resulting strings
 > ticker :: Behavior String
-> ticker = error "fill me in" -- change this
+> ticker = (pure (++)) <*> (toUpperString <*> phrase) <*> ((pure show) <*> time)
+
 
 (c) Prove that for your definitions, 
 
     pure f <*> pure x = pure (f x)
+
+1.) pure f <*> pure x                      =  Beh (\t -> f) <*> Beh (\t -> x)          (by def of pure)
+2.) Beh (\t -> f) <*> Beh (\t -> x)        =  Beh (\t -> ((\t -> f) t) ((\t -> x) t)   (by def of <*>)
+3.) Beh (\t -> ((\t ->f) t) ((\t -> x) t)) =  Beh (\t -> f x)                          (by evaluation of \t -> f on t returns f,
+                                                                                        and \t -> x on t returns x)
+4.) Beh (\t -> f x)                        =  pure (f x)                               (by folding def of pure)
+5.) pure f <*> pure x                      =  pure (f x)                               (by 4)   
            
+
 (d) Prove that for your definitions, for any b :: Behavior a
 
     fmap (f . g) b = ((fmap f) . (fmap g)) b
@@ -283,5 +293,20 @@ you may find some useful functions such as <$> <$ <**> liftA liftA2 liftA3.
     You may use the definition of function composition (f . g):
            
     (f . g) x = f (g x)
-           
+     
+RHS approach
+1.) fmap (f.g) b         = Beh(\t-> (f.g) (b t))     (by def of fmap)
+2.) Beh(\t->(f.g) (b t)) = Beh(\t->f (g (b t)))      (by def of function composition)
+
+LHS approach
+3.) ((fmap f) . (fmap g)) b         = fmap f (fmap g b)                 (by def of function composition)
+4.) fmap f (fmap g b)               = fmap f (Beh (\t-> g (b t)))       (by def of fmap)
+5.) fmap f (Beh (\t-> g (b t)))     = Beh(\t->f (Beh(\t->g (b t)) t))   (by def of fmap)
+6.) Beh(\t->f (Beh(\t->g (b t)) t)) = Beh(\t->f (Beh(\t->g (b t))))     (by evaluation of t for t)
+7.) Beh(\t->f (Beh(\t->g (b t))))   = Beh(\t->f (g (b t)))              (by understanding of Beh)
+
+Summary
+8.) fmap (f . g) b                  = ((fmap f) . (fmap g)) b           (by 2, 7)
+
+
 
