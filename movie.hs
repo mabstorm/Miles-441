@@ -81,6 +81,36 @@ create_cloud cx cy time_off = p1 `overB` p2 `overB` p3 `overB` p4
 
 
 
+poly = lift1 Polygon
+
+kite_size = 0.3
+
+mykite = mypolycyan `overB` mypolyred `overB` kite_line
+
+mypolycyan = reg (lift0 cy) (shape (poly (Beh (\t -> 
+  [(kite_size*cos(t),kite_size*sin(t)),
+  (kite_size*(cos(t)+1), kite_size*(sin(t))),
+  (kite_size*(cos(t)), kite_size*(sin(t)-2)),
+  (kite_size*(cos(t)), kite_size*(sin(t)+1)),
+  (kite_size*(cos(t)-1), kite_size*(sin(t)))]
+  ))))
+
+mypolyred = reg (lift0 Red) (shape (poly (Beh (\t -> 
+  [(kite_size*cos(t),kite_size*sin(t)),
+  (kite_size*(cos(t)-1), kite_size*(sin(t))),
+  (kite_size*(cos(t)), kite_size*(sin(t)-2)),
+  (kite_size*(cos(t)), kite_size*(sin(t)+1)),
+  (kite_size*(cos(t)+1), kite_size*(sin(t)))]
+  ))))
+
+kite_line = reg (lift0 Black) (shape (poly (Beh (\t ->
+  [(kite_size*cos(t),kite_size*(sin(t)-2)),
+  (kite_size*(cos(t)+0.1),kite_size*(sin(t)-2)),
+  (-3,-1.7),
+  (-3.1,-1.7)]
+  ))))
+
+
 cw :: Color
 cw = White
 cb :: Color
@@ -127,7 +157,7 @@ main =
   --do animateB "clouds" (cloud_move ell1 ell2 ell3 ell1b ell2b ell3b 1.9 1.8 2 1 4)
     do animateB "clouds" cloudblock where
      -- cloudblock = cloud1 `overB` cloud2 `overB` cloud3 `overB` cloud4 `overB` cloud5 `overB` cloud6 `overB`  sky `overB` ground where
-      cloudblock = ground `overB` obj `overB` (overP to1 cloud1 cloud2) `overB` (overP to2 cloud3 cloud4) `overB` (overP to05 cloud5 cloud6) `overB` sun `overB` sky `overB` ground where
+      cloudblock = mykite `overB` ground `overB` (overP to1 cloud1 cloud2) `overB` (overP to2 cloud3 cloud4) `overB` (overP to05 cloud5 cloud6) `overB` sun `overB` sky `overB` ground where
         --create_cloud cx cy time_off
         cloud1 = create_cloud 4.9 (-0.4) to1
         cloud2 = create_cloud 0.5 0 to15
