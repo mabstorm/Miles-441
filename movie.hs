@@ -1,13 +1,18 @@
 -- COS 441 Homework 3 Part V
--- Our own movie/animation
+-- Michael Bailey (mabailey)
+-- Leon Ho (tlho)
 --
+-- Our own movie/animation
+-- Kites fly overhead as a kite flies in the wind on a bright, sunny day
 --
 
 import Control.Applicative
 import Animation hiding (translate)
 import Picture hiding (circle)
-import Robot hiding (main,spaceClose,at)
 import SOE
+
+-- The next several sections are from the previous part of the assignment
+
 
 translate :: (Float, Float) -> Picture -> Picture
 translate v p =
@@ -37,13 +42,6 @@ instance Applicative Behavior where
   pure f = Beh (\t -> f)
   (Beh f) <*> (Beh x) = Beh (\t -> f t (x t))
 
-
--- a = runGraphics $
---      do w <- openWindowEx "Robot World" (Just (0,0)) 
---                (Just (xWin,yWin)) drawBufferedGraphic
---         drawLine w Green (2,200) (100,200)
---         spaceClose w
-
 overB = lift2 Over
 overP time_off p1 p2  = Beh (\t ->
                          if sin(t*(freq+time_off)) > 0
@@ -51,11 +49,11 @@ overP time_off p1 p2  = Beh (\t ->
                              else at (overB p2 p1) t
                        )
 
-
 at :: Behavior a -> Time -> a
 at (Beh f) t = f t
 
 
+--create a solid cloud object given the center x, center y, and time offset
 create_cloud :: Float -> Float -> Float -> Behavior Picture
 
 create_cloud cx cy time_off = p1 `overB` p2 `overB` p3 `overB` p4
@@ -80,22 +78,24 @@ create_cloud cx cy time_off = p1 `overB` p2 `overB` p3 `overB` p4
         centery = Beh (\t -> cy)
 
 
-
+--be able to make polygons
 poly = lift1 Polygon
 
+--making our kite object
 kite_size = 0.3
 
-mykite = mypolycyan `overB` mypolyred `overB` kite_line
+mykite = kite_cyan_half `overB` kite_red_half `overB` kite_line
 
-mypolycyan = reg (lift0 cy) (shape (poly (Beh (\t -> 
+--Cyan half
+kite_cyan_half = reg (lift0 cy) (shape (poly (Beh (\t -> 
   [(kite_size*cos(t),kite_size*sin(t)),
   (kite_size*(cos(t)+1), kite_size*(sin(t))),
   (kite_size*(cos(t)), kite_size*(sin(t)-2)),
   (kite_size*(cos(t)), kite_size*(sin(t)+1)),
   (kite_size*(cos(t)-1), kite_size*(sin(t)))]
   ))))
-
-mypolyred = reg (lift0 Red) (shape (poly (Beh (\t -> 
+--Red half
+kite_red_half = reg (lift0 Red) (shape (poly (Beh (\t -> 
   [(kite_size*cos(t),kite_size*sin(t)),
   (kite_size*(cos(t)-1), kite_size*(sin(t))),
   (kite_size*(cos(t)), kite_size*(sin(t)-2)),
@@ -103,6 +103,7 @@ mypolyred = reg (lift0 Red) (shape (poly (Beh (\t ->
   (kite_size*(cos(t)+1), kite_size*(sin(t)))]
   ))))
 
+--The kite's string
 kite_line = reg (lift0 Black) (shape (poly (Beh (\t ->
   [(kite_size*cos(t),kite_size*(sin(t)-2)),
   (kite_size*(cos(t)+0.1),kite_size*(sin(t)-2)),
@@ -110,7 +111,7 @@ kite_line = reg (lift0 Black) (shape (poly (Beh (\t ->
   (-3.1,-1.7)]
   ))))
 
-
+-- our colors, though they are unnecessary, but it was easier to change quickly
 cw :: Color
 cw = White
 cb :: Color
@@ -124,6 +125,7 @@ cy = Cyan
 cyellow :: Color
 cyellow = Yellow
 
+-- constants that we use for cloud behavior
 ell_rad :: Behavior Radius
 ell_rad = 0.2
 half_rad :: Float
@@ -133,14 +135,14 @@ ell_xrad = 0.5
 half_xrad :: Float
 half_xrad = 0.4
 
+freq :: Float
+freq = 0.1
+xrad :: Float
+xrad = 10
 
-ground = translateB (Beh (\t->0),Beh (\t->(-6.8))) (reg (lift0 cg) (shape (ell 100 5)))
-sky = translateB (Beh (\t->0),Beh (\t->3)) (reg (lift0 cblue) (shape (ell 100 5)))
-sun = translateB (Beh (\t->2),Beh (\t->4)) (reg (lift0 cyellow) (shape(ell 2 2)))
-obj = translateB (Beh (\t->0),Beh (\t->(-1.5))) (reg (lift0 cy) (shape(ell 0.2 4)))
-
-
+-- the most basic part of the cloud
 ell1 = reg (lift0 cw) (shape (ell ell_xrad ell_rad))
+
 to1 = 0.1
 to2 = 0.2
 to3 = 0.3
@@ -148,15 +150,16 @@ to4 = 0.4
 to05 = 0.05
 to15 = 0.15 
 
-freq :: Float
-freq = 0.1
-xrad :: Float
-xrad = 10
 
+-- the environment
+ground = translateB (Beh (\t->0),Beh (\t->(-6.8))) (reg (lift0 cg) (shape (ell 100 5)))
+sky = translateB (Beh (\t->0),Beh (\t->3)) (reg (lift0 cblue) (shape (ell 100 5)))
+sun = translateB (Beh (\t->2),Beh (\t->4)) (reg (lift0 cyellow) (shape(ell 2 2)))
+
+
+-- call this to see the movie
 main =
-  --do animateB "clouds" (cloud_move ell1 ell2 ell3 ell1b ell2b ell3b 1.9 1.8 2 1 4)
     do animateB "clouds" cloudblock where
-     -- cloudblock = cloud1 `overB` cloud2 `overB` cloud3 `overB` cloud4 `overB` cloud5 `overB` cloud6 `overB`  sky `overB` ground where
       cloudblock = mykite `overB` ground `overB` (overP to1 cloud1 cloud2) `overB` (overP to2 cloud3 cloud4) `overB` (overP to05 cloud5 cloud6) `overB` sun `overB` sky `overB` ground where
         --create_cloud cx cy time_off
         cloud1 = create_cloud 4.9 (-0.4) to1

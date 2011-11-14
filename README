@@ -1,2 +1,24 @@
-planets floating around, animation, typeclasses
-checking new line
+-- COS 441 Homework 3 Part V
+-- Michael Bailey (mabailey)
+-- Leon Ho (tlho)
+
+Our own movie/animation:
+Kites fly overhead as a kite flies in the wind on a bright, sunny day.
+
+The basic structure consists of the following parts:
+Environment:
+The environment contains a sky, a ground, and a sun. These are all
+stationary.
+
+Clouds:
+Clouds are easily created by giving a center point and a time offset to
+our create_cloud constructor. This creates four ellipses that are grouped
+together to form a single object that moves as a function of time, giving the
+appearance of a cloud.
+
+Kite:
+The kite consists of two halfs and a string. These are created from polygons,
+and they move as a function of time, as if swaying in the wind.
+
+
+
