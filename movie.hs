@@ -5,7 +5,7 @@
 
 import Control.Applicative
 import Animation hiding (translate)
-import Picture
+import Picture hiding (circle)
 import Robot hiding (main,spaceClose,at)
 import SOE
 
@@ -50,30 +50,31 @@ overP time_off p1 p2  = Beh (\t ->
                              then at (overB p1 p2) t
                              else at (overB p2 p1) t
                        )
+
+
 at :: Behavior a -> Time -> a
 at (Beh f) t = f t
 
 
 create_cloud :: Float -> Float -> Float -> Behavior Picture
 
-create_cloud cx cy time_off = (overP time_off p1 p1b) `overB` (overP time_off p2 p2b) `overB` (overP time_off p3 p3b) `overB` (overP time_off p4 p4b)
+create_cloud cx cy time_off = p1 `overB` p2 `overB` p3 `overB` p4
   where p1 = (translateB (rightx, centery) ell1)
         p2 = (translateB (centerx, topy) ell1)
         p3 = (translateB (centerx, bottomy) ell1)
         p4 = (translateB (leftx, centery) ell1)
-        p1b = (translateB (rightx, centery) ell1b)
-        p2b = (translateB (centerx, topy) ell1b)
-        p3b = (translateB (centerx, bottomy) ell1b)
-        p4b = (translateB (leftx, centery) ell1b)
---       rightx :: Behavior Float
---       leftx :: Behavior Float
---       centerx :: Behavior Float
---       topy :: Behavior Float
---       bottomy :: Behavior Float
---       centery :: Behavior Float
-        rightx = Beh (\t -> xrad*cos(t*(freq+time_off))+half_xrad+cx)
-        leftx = Beh (\t -> xrad*cos(t*(freq+time_off))-half_xrad+cx)
-        centerx = Beh (\t -> xrad*cos(t*(freq+time_off))+cx)
+        rightx = Beh (\t -> 
+                         if sin(t*(freq+time_off)) > 0
+                             then (xrad*cos(t*(freq+time_off))+half_xrad+cx)
+                             else (-xrad*cos(t*(freq+time_off))+half_xrad+cx))
+        leftx = Beh (\t -> 
+                         if sin(t*(freq+time_off)) > 0
+                             then (xrad*cos(t*(freq+time_off))-half_xrad+cx)
+                             else (-xrad*cos(t*(freq+time_off))-half_xrad+cx))
+        centerx = Beh (\t -> 
+                         if sin(t*(freq+time_off)) > 0
+                             then (xrad*cos(t*(freq+time_off))+cx)
+                             else (-xrad*cos(t*(freq+time_off))+cx))
         topy = Beh (\t -> cy + half_rad)
         bottomy = Beh (\t -> cy - half_rad)
         centery = Beh (\t -> cy)
@@ -88,6 +89,10 @@ cblue :: Color
 cblue = Blue
 cg :: Color
 cg = Green
+cy :: Color
+cy = Cyan
+cyellow :: Color
+cyellow = Yellow
 
 ell_rad :: Behavior Radius
 ell_rad = 0.2
@@ -99,12 +104,19 @@ half_xrad :: Float
 half_xrad = 0.4
 
 
-ground = translateB (Beh (\t->0),Beh (\t->0)) (reg (lift0 cg) (shape (ell 100 5)))
+ground = translateB (Beh (\t->0),Beh (\t->(-6.8))) (reg (lift0 cg) (shape (ell 100 5)))
 sky = translateB (Beh (\t->0),Beh (\t->3)) (reg (lift0 cblue) (shape (ell 100 5)))
+sun = translateB (Beh (\t->2),Beh (\t->4)) (reg (lift0 cyellow) (shape(ell 2 2)))
+obj = translateB (Beh (\t->0),Beh (\t->(-1.5))) (reg (lift0 cy) (shape(ell 0.2 4)))
 
 
 ell1 = reg (lift0 cw) (shape (ell ell_xrad ell_rad))
-ell1b = reg (lift0 cb) (shape (ell ell_xrad ell_rad))
+to1 = 0.1
+to2 = 0.2
+to3 = 0.3
+to4 = 0.4
+to05 = 0.05
+to15 = 0.15 
 
 freq :: Float
 freq = 0.1
@@ -114,60 +126,16 @@ xrad = 10
 main =
   --do animateB "clouds" (cloud_move ell1 ell2 ell3 ell1b ell2b ell3b 1.9 1.8 2 1 4)
     do animateB "clouds" cloudblock where
-      cloudblock = cloud1 `overB` cloud2 `overB` cloud3 `overB` cloud4 `overB` sky `overB` ground where
+     -- cloudblock = cloud1 `overB` cloud2 `overB` cloud3 `overB` cloud4 `overB` cloud5 `overB` cloud6 `overB`  sky `overB` ground where
+      cloudblock = ground `overB` obj `overB` (overP to1 cloud1 cloud2) `overB` (overP to2 cloud3 cloud4) `overB` (overP to05 cloud5 cloud6) `overB` sun `overB` sky `overB` ground where
         --create_cloud cx cy time_off
-        cloud1 = create_cloud 4.9 0.6 0.1
-        cloud2 = create_cloud 0.3 2.2 0.1
-        cloud3 = create_cloud 1.5 0 0.2
-        cloud4 = create_cloud 2.9 1.6 0.3
+        cloud1 = create_cloud 4.9 (-0.4) to1
+        cloud2 = create_cloud 0.5 0 to15
+        cloud3 = create_cloud 0.3 0.9 to2
+        cloud4 = create_cloud 2.8 1.2 to3 
+        cloud5 = create_cloud 1.5 1.8 to05
+        cloud6 = create_cloud 4.3 2.4 to4
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---cloud_move :: Behavior Picture -- p1
---     -> Behavior Picture -- p1b
---     -> Behavior Picture -- p2
---     -> Behavior Picture -- p2b
---     -> Behavior Picture -- p3
---     -> Behavior Picture -- p3b
---     -> Behavior Picture -- p3b
---     -> Behavior Picture -- p3b
---     -> Float            -- y1
---     -> Float            -- y2
---     -> Float            -- y3
---     -> Float            -- freq
---     -> Float            -- xrad
---     -> Behavior Picture
---
---cloud_move p1 p2 p3 p4 p1b p2b p3b y1 y2 y3 freq xrad = (overP freq p1' p1b') `overB` (overP freq p2' p2b') `overB` (overP freq p3' p3b')  
---    where p1' = (translateB (x1, by1) p1)
---          p2' = (translateB (floatx, by2) p2)
---          p3' = (translateB (floatx, by3) p3)
---          p1b' = (translateB (x1, by1) p1b)
---          p2b' = (translateB (floatx, by2) p2b)
---          p3b' = (translateB (floatx, by3) p3b)
---          x1 :: Behavior Float
---          x1 = Beh (\t -> xrad*cos(t*freq)+1)
---          floatx :: Behavior Float
---          floatx = Beh (\t -> xrad*cos (t*freq))
---          by1 :: Behavior Float
---          by1 = Beh (\t -> y1)
---          by2 :: Behavior Float
---          by2 = Beh (\t -> y2)
---          by3 :: Behavior Float
---          by3 = Beh (\t -> y3)
 
