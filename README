@@ -5,6 +5,11 @@
 Our own movie/animation:
 Kites fly overhead as a kite flies in the wind on a bright, sunny day.
 
+
+Instructions:
+run the main by typing 'main'
+
+
 The basic structure consists of the following parts:
 Environment:
 The environment contains a sky, a ground, and a sun. These are all
