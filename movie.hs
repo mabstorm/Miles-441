@@ -83,7 +83,11 @@ create_cloud cx cy time_off = (overP time_off p1 p1b) `overB` (overP time_off p2
 cw :: Color
 cw = White
 cb :: Color
-cb = Black
+cb = Blue
+cblue :: Color
+cblue = Blue
+cg :: Color
+cg = Green
 
 ell_rad :: Behavior Radius
 ell_rad = 0.2
@@ -94,6 +98,9 @@ ell_xrad = 0.5
 half_xrad :: Float
 half_xrad = 0.4
 
+
+ground = translateB (Beh (\t->0),Beh (\t->0)) (reg (lift0 cg) (shape (ell 100 5)))
+sky = translateB (Beh (\t->0),Beh (\t->3)) (reg (lift0 cblue) (shape (ell 100 5)))
 
 
 ell1 = reg (lift0 cw) (shape (ell ell_xrad ell_rad))
@@ -107,11 +114,12 @@ xrad = 10
 main =
   --do animateB "clouds" (cloud_move ell1 ell2 ell3 ell1b ell2b ell3b 1.9 1.8 2 1 4)
     do animateB "clouds" cloudblock where
-      cloudblock = cloud1 `overB` cloud2 `overB` cloud3 `overB` cloud4 where
-        cloud1 = create_cloud 4.9 1 0.1
-        cloud2 = create_cloud 0.3 2 0.1
+      cloudblock = cloud1 `overB` cloud2 `overB` cloud3 `overB` cloud4 `overB` sky `overB` ground where
+        --create_cloud cx cy time_off
+        cloud1 = create_cloud 4.9 0.6 0.1
+        cloud2 = create_cloud 0.3 2.2 0.1
         cloud3 = create_cloud 1.5 0 0.2
-        cloud4 = create_cloud 2.9 1.3 0.3
+        cloud4 = create_cloud 2.9 1.6 0.3
 
 
 
