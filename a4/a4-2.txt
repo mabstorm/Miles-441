@@ -1,0 +1,22 @@
+Assignment Part II:  Hoare Triples
+
+a)	
+
+{ n >= 0 & i = 0 & v = 1 }
+while (i < n) { i = i + 1; v = 2*v }
+{ v = 2^n}
+
+Loop Invariant =
+
+Proof using Hoare rules:
+
+
+b)
+	
+{ n = 2^k & k >= 0 & x = "" }
+while (n >1 ) { n = n / 2; x = "-" ++ x; }
+{ length(x) = k }
+
+Loop Invariant =
+
+Proof using Hoare rules:
