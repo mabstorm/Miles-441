@@ -38,24 +38,24 @@ invalidPre = error "Invalid Precondition:  Replace me"
 -- 0 --
 
 prog0 = Prog [] Skip 
-trip0 = (invalidPre, prog0, TRUE)     -- Replace invalidPre!
+trip0 = (TRUE, prog0, TRUE)     -- Replace invalidPre!
 
 -- 1 --
 
 prog1 = Prog [x'] Skip 
-trip1 = (invalidPre, prog1, x :=: 5)  -- Replace invalidPre!
+trip1 = ( x :=: 5 , prog1, x :=: 5)  -- Replace invalidPre!
 
 -- 2 --
 
-pre2  = invalidPre                    -- Replace!
+pre2  = TRUE    -- Replace!
 c2    = If (a :<: n) Skip (a' := n - 1) 
 post2 = a :<: n 
 trip2 = (pre2, Prog ds c2, post2)
 
 -- 3 --
 
-pre3  = invalidPre                    -- Replace with something other than FALSE!
-inv3  = invalidInv                    -- Replace!
+pre3  = a :=: 2 * x :&: n :=: 0    -- Replace with something other than FALSE!
+inv3  = a :=: 2 * x        -- Replace!
 c3 inv =
   While (0 :<: n) (inv) ( 
     n' := n - 1 :> 
@@ -97,9 +97,9 @@ trip5 = (pre5, prog5, post5)
 
 -- 6 --
 
-pre6   = invalidPre                  -- Replace with something other than FALSE (or equivalent to FALSE) 
-inv6a  = invalidInv                  -- Replace
-inv6b  = FALSE
+pre6   = a :=: 5 * y :&: n :=: 0          -- Replace with something other than FALSE (or equivalent to FALSE) 
+inv6a  = a :=: 5 * y                  -- Replace
+inv6b  = a :=: 5 * y
 c6 inv1 inv2 =
   While (0 :<: n) (inv1) ( 
     x' := 5 :>

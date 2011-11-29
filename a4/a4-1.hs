@@ -90,8 +90,15 @@ lamFToInt l = getInt l
 -- convert an H.Lam representing a number into an integer
 -- assume that argument l does not contain any free variables.
 -- raise an exception using error if the argument l does not have the form \s.\z.s (s (... z))
-{-
+
 lamHToInt :: H.Lam -> Int
+lamHToInt = error "See implementation for attempt. Failed at pattern matching"
+
+-- The big problem is with the lambda function which Haskell does not pattern
+-- match with. We tried using the eval function, but we were not able to find
+-- a function which would return the part we needed to continue.
+
+{-
 lamHToInt l = getInt l
   where
     getInt l = aux 0 l "" ""
@@ -111,6 +118,9 @@ lamHToInt l = getInt l
         then error "not well-formed argument l code:5"
         else n
 -}
+
+
+
 -- Testing --
 -- these tests are not necessarily complete --
 --myCheck p = quickCheckWith args p
