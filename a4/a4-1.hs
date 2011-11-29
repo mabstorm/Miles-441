@@ -90,11 +90,12 @@ lamFToInt l = getInt l
 -- convert an H.Lam representing a number into an integer
 -- assume that argument l does not contain any free variables.
 -- raise an exception using error if the argument l does not have the form \s.\z.s (s (... z))
+{-
 lamHToInt :: H.Lam -> Int
 lamHToInt l = getInt l
   where
     getInt l = aux 0 l "" ""
-    aux n (H.Abs (a->lam)) firstval secondval = 
+    aux n (H.Abs (\ a -> (lam))) firstval secondval = 
       if firstval==""
         then aux n lam (showlam False 0 s) ""
         else if (secondval==""&&firstval/=secondval)
@@ -109,7 +110,7 @@ lamHToInt l = getInt l
       if (showlam False 0 fvar)/=secondval
         then error "not well-formed argument l code:5"
         else n
-
+-}
 -- Testing --
 -- these tests are not necessarily complete --
 --myCheck p = quickCheckWith args p
