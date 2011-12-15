@@ -60,7 +60,16 @@ equation 1.
 
 Proof:
 
-...
+Trying to prove:
+(return a) >>= k    = k a
+
+1. (return a) >>=  k      =   P ("", a) >>= k                              (by unfolding of def of return)
+2. P ("", a) >>= k        =   (>>=) P ("", a) k                            (by reordering the infix op)
+3. (>>=) P ("", a) k      =   let P (s',v') = k a in P (""++s',v')         (by unfolding def of (>>=))
+4. let P (s',v') = k a in P(""++s',v')  =  let P (s',v') = k a in P(s',v') (by def of concat with "")
+5. let P (s',v') = k a in P (s',v')     =  k a                             (by using let to substitute)
+6. (return a) >>=k        = k a                                            (by 1,2,3,4,5)
+proof done
 
 
 (b)  Do a 2-column proof below that the Printer monad satisfies monad
@@ -68,7 +77,20 @@ equation 2.
 
 Proof:
 
-...
+Trying to prove:
+m >>= return    = m
+We assume that m has the appropriate type which is P (s,v)
+thus m = P (s,v)
+
+1. P (s,v) >>= return    =  (>>=) P (s,v) return  (by reording the infix op)
+2. (>>=) P (s,v) return  =  let P (s',v') = return v in P (s++s',v')  (by unfolding def of (>>=))
+3. let P (s',v') = return v in P (s++s',v')  =  let P (s',v') = P ("", v) in P (s++s',v') (by unfolding def of return)
+4. let P (s',v') = P ("", v)  =>  s'="" and v'=v  (by def of let)
+5. P (s++s',v')  = P(s++"",v)      (by substitution of s' and v' from 4)
+6. P (s++"",v)   = P (s,v)         (by def of concat with "")
+7. p (s,v) >>= return  = P (s,v)   (by 1-6)
+8. m >>= return  =  m              (by initial subsitution of m = P (s,v))
+proof done
 
 
 (c) Translate the left-hand side of equation 1 into an equivalent
@@ -76,15 +98,15 @@ expression in do notation (ie:  translate "return a >>= k" into
 an equivalent expression in do noation that does not use ">>="):
 
 > lhs1 a k = do
->   error "replace me"
-
+>   x <- return a
+>   k x
 
 (d) What is the type of lhs1, assuming we are working with the
 Printer monad?  (ie: do not give a fully generic type in terms
 of some aribitrary monad "m", give the type in terms of the 
 specific monad "Printer")
 
-lhs1 :: ????
+lhs1 :: a -> (a -> Printer b) -> Printer b
 
 
 (e) Translate the left-hand side of equation 3 into an equivalent 
@@ -93,13 +115,16 @@ expression written in do notation.  (ie:, translate
 do notation that does not use ">>=" )
 
 > lhs3 m k h = do
->   error "replace me"
+>   x <- m
+>   y <- k x
+>   h y
+
 
 
 (f) What is the type of lhs3, assuming we are working with the
 Printer monad?
 
-lhs3 :: ???
+lhs3 :: Printer a -> (a -> Printer a1) -> (a1 -> Printer b) -> Printer b
 
 
 (g) Below, define any new type T that you want and write a *faulty* 
@@ -111,14 +136,21 @@ your instance definition, give a counter-example and briefly explain
 
 Monad type and instance definition:
 
->
->
->
+> newtype Faulty a = Faul (String, a) deriving (Show)
+> instance Monad Faulty where
+>   return v = Faul ("broken", v)
+>   (>>=) (Faul (a,b)) f = let Faul (a',b') = f b in Faul (a++a',b')
 
 Counter-example and brief explanation of why it fails equation 1:
 
-> k = error "replace me with a counter example"
-> a = error "replace me with a counter example"
+> k = \x -> Faul ("other", x)
+> a = 3
+
+k a results in a string with only "other" as part of the Faulty Integer.
+(return a) >>= k results in the string "brokenother" as part of the
+faulty integer. This is because k operating on the resulting value
+of (return a) is not the same as k operating on a.
+
 
 (h)  Do the same as (g), except this time, write an instance declaration
 that fails equations 2.  (You instance declaration could be the
@@ -126,13 +158,20 @@ same as in (g) if your instance satisfies neither equation 1 nor 2.)
 
 Monad type and instance definition:
 
->
->
->
+> newtype Faulty2 a = Faul2 (String, a) deriving (Show)
+> instance Monad Faulty2 where
+>   return v = Faul2 ("broken", v)
+>   (>>=) (Faul2 (a,b)) f = let Faul2 (a',b') = f b in Faul2 (a++a',b')
 
 Counter-example and brief explanation of why it fails equation 3:
 
-> m = error "replace me with a counter example"
+> m = Faul2 ("broken", 2)
+
+m is Faul2 ("broken",2) but m >>= return is Faul2 ("brokenbroken",2).
+The reason is the same as with the above case. Since the base case
+from return does not return an empty string, a new layer of "broken"
+is added on each time rather than returning the same thing.
+
 
 --------------------------------------------------
 
@@ -148,19 +187,32 @@ law (for all m, n, f with the appropriate types):
 (i) Below, write the law above in do notation instead of using >>=. 
 
 do                   
-   ...               
-   ...                   
+   x <- m   
+   y <- n 
+   f x y
+                     
 
 = 
 
 do 
-   ...
-   ...
+   x <- b   
+   y <- m 
+   f y x
+                   
   
 
 (j) Is the Printer monad defined above commutative?  
 
 Yes or No:  
 
+No
+
+
+Concatenation is not commutative, so applying functions in different
+orders will cause a different String to be formed.
+ie. if function x adds "s1" to the Printer,
+    and function y adds "s2" to the Printer,
+    applying x then y would cause "s1s2" to be in the Printer,
+    but y then x causes "s2s1"
 
 
